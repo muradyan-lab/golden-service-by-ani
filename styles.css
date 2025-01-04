@@ -27,6 +27,21 @@ body {
     color: white;
     font-size: 1.5rem;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-brand i {
+    color: #FFD700;
+    font-size: 1.2rem;
+}
+
+.nav-brand span {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Segoe UI', Arial, sans-serif;
 }
 
 .nav-links {
