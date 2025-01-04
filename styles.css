@@ -40,7 +40,9 @@ body {
 .nav-brand span {
     background: linear-gradient(135deg, #FFD700, #FFA500);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-fill-color: transparent;
     font-family: 'Segoe UI', Arial, sans-serif;
 }
 
