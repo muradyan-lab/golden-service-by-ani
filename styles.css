@@ -94,6 +94,59 @@ body {
     color: #2c3e50;
 }
 
+/* About Section */
+.about-content {
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.8;
+}
+
+.about-content .intro {
+    font-size: 1.2em;
+    color: #2c3e50;
+    font-weight: 500;
+    margin-bottom: 2rem;
+}
+
+.services-highlight {
+    background: linear-gradient(135deg, #ffd70033, #ffa50033);
+    padding: 2rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.services-highlight h3 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.services-highlight ul {
+    list-style: none;
+    padding: 0;
+}
+
+.services-highlight li {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.services-highlight li:before {
+    content: "✓";
+    color: #ffa500;
+    position: absolute;
+    left: 0;
+}
+
+.about-content .closing {
+    font-size: 1.2em;
+    color: #2c3e50;
+    font-weight: 500;
+    text-align: center;
+    margin-top: 2rem;
+}
+
 /* Booking Form */
 #booking-form {
     display: flex;
