@@ -9,17 +9,16 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors({
-    origin: '*', // Allow all origins temporarily for testing
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type'],
-}));
-
-// Add OPTIONS handling for CORS preflight
-app.options('*', cors());
-
-app.use(express.json());
+app.use(cors());  
+app.use(express.json({ limit: '1mb' }));  
+app.use(express.urlencoded({ extended: true }));  
 app.use(express.static(path.join(__dirname)));
+
+// Add basic request logging
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+    next();
+});
 
 // Add security headers
 app.use((req, res, next) => {
@@ -70,96 +69,96 @@ const transporter = nodemailer.createTransport({
 
 // Routes
 app.post('/api/book', (req, res) => {
-    console.log('Received booking request. Body:', req.body);
-    console.log('Headers:', req.headers);
-    
-    const { name, email, phone, date, time, eventType, details } = req.body;
-    
-    // Validate required fields
-    if (!name || !email || !phone || !date || !time || !eventType) {
-        console.error('Missing required fields:', { name, email, phone, date, time, eventType });
-        return res.status(400).json({ 
-            error: 'All fields are required except details',
-            missing: Object.entries({ name, email, phone, date, time, eventType })
-                .filter(([key, value]) => !value)
-                .map(([key]) => key)
+    try {
+        const { name, email, phone, date, time, eventType, details } = req.body;
+        
+        // Log the incoming request
+        console.log('Booking request received:', {
+            name,
+            email,
+            phone,
+            date,
+            time,
+            eventType,
+            details: details || 'No details provided'
         });
+        
+        // Validate required fields
+        if (!name || !email || !phone || !date || !time || !eventType) {
+            return res.status(400).json({ 
+                error: 'Please fill in all required fields' 
+            });
+        }
+
+        // Insert booking into database
+        const sql = `INSERT INTO bookings (name, email, phone, date, time, eventType, details)
+                     VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        
+        db.run(sql, [name, email, phone, date, time, eventType, details], function(err) {
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Could not save booking' });
+            }
+
+            console.log('Booking saved successfully. ID:', this.lastID);
+
+            // Send email to admin
+            const adminMailOptions = {
+                from: process.env.EMAIL_USER,
+                to: process.env.ADMIN_EMAIL,
+                subject: 'New Event Booking',
+                text: `
+                    New booking received:
+                    Name: ${name}
+                    Email: ${email}
+                    Phone: ${phone}
+                    Date: ${date}
+                    Time: ${time}
+                    Event Type: ${eventType}
+                    Details: ${details || 'No additional details provided'}
+                `
+            };
+
+            // Send email to customer
+            const customerMailOptions = {
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: 'Booking Confirmation - Golden Service by Ani',
+                text: `
+                    Dear ${name},
+
+                    Thank you for booking with Golden Service by Ani!
+
+                    Your booking details:
+                    Date: ${date}
+                    Time: ${time}
+                    Event Type: ${eventType}
+
+                    We will contact you shortly to discuss the details of your event.
+
+                    Best regards,
+                    Golden Service by Ani
+                `
+            };
+
+            // Send emails
+            Promise.all([
+                transporter.sendMail(adminMailOptions),
+                transporter.sendMail(customerMailOptions)
+            ]).then(() => {
+                res.json({ message: 'Booking successful' });
+            }).catch(err => {
+                console.error('Email error:', err);
+                res.status(200).json({ 
+                    message: 'Booking saved but email notification failed',
+                    booking_id: this.lastID
+                });
+            });
+        });
+    } catch (error) {
+        console.error('Server error:', error);
+        res.status(500).json({ error: 'Server error occurred' });
     }
-
-    console.log('Received booking request:', { name, email, phone, date, time, eventType, details });
-    
-    // Insert booking into database
-    const sql = `INSERT INTO bookings (name, email, phone, date, time, eventType, details)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    
-    db.run(sql, [name, email, phone, date, time, eventType, details], function(err) {
-        if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ error: err.message });
-        }
-
-        console.log('Booking saved successfully. ID:', this.lastID);
-
-        // Send email to admin
-        const adminMailOptions = {
-            from: process.env.EMAIL_USER,
-            to: process.env.ADMIN_EMAIL,
-            subject: 'New Event Booking',
-            text: `
-                New booking received:
-                Name: ${name}
-                Email: ${email}
-                Phone: ${phone}
-                Date: ${date}
-                Time: ${time}
-                Event Type: ${eventType}
-                Details: ${details || 'No additional details provided'}
-            `
-        };
-
-        // Send email to customer
-        const customerMailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'Booking Confirmation - Golden Service by Ani',
-            text: `
-                Dear ${name},
-
-                Thank you for booking with Golden Service by Ani!
-
-                Your booking details:
-                Date: ${date}
-                Time: ${time}
-                Event Type: ${eventType}
-
-                We will contact you shortly to discuss the details of your event.
-
-                Best regards,
-                Golden Service by Ani
-            `
-        };
-
-        // Send emails
-        try {
-            transporter.sendMail(adminMailOptions, (error) => {
-                if (error) console.error('Admin email error:', error);
-                else console.log('Admin notification email sent');
-            });
-            
-            transporter.sendMail(customerMailOptions, (error) => {
-                if (error) console.error('Customer email error:', error);
-                else console.log('Customer confirmation email sent');
-            });
-        } catch (emailError) {
-            console.error('Email sending error:', emailError);
-            // Continue with success response even if email fails
-        }
-
-        res.json({
-            message: 'Booking successful',
-            bookingId: this.lastID
-        });
-    });
 });
 
 app.listen(port, () => {
