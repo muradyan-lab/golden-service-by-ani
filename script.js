@@ -36,10 +36,7 @@ if (bookingForm) {
         const bookingDetails = Object.fromEntries(formData.entries());
         
         try {
-            const apiUrl = 'https://golden-service-by-ani.onrender.com/api/book';
-            console.log('Submitting to:', apiUrl);
-            
-            const response = await fetch(apiUrl, {
+            const response = await fetch('/api/book', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -51,11 +48,10 @@ if (bookingForm) {
                 alert('Booking successful! Check your email for confirmation.');
                 this.reset();
             } else {
-                const result = await response.json();
-                alert('Error: ' + (result.error || 'Unknown error occurred'));
+                alert('Error submitting booking. Please try again later.');
             }
         } catch (error) {
-            console.error('Submission error:', error);
+            console.error('Error:', error);
             alert('Error submitting booking. Please try again later.');
         }
     });
