@@ -10,10 +10,14 @@ const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-    origin: ['https://www.goldenservicebyani.com', 'https://golden-service-by-ani.onrender.com'],
-    methods: ['GET', 'POST'],
-    credentials: true
+    origin: '*', // Allow all origins temporarily for testing
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type'],
 }));
+
+// Add OPTIONS handling for CORS preflight
+app.options('*', cors());
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
@@ -23,6 +27,15 @@ app.use((req, res, next) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     next();
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Server Error:', err);
+    res.status(500).json({ 
+        error: 'Internal server error',
+        details: err.message 
+    });
 });
 
 // Database setup
@@ -57,13 +70,19 @@ const transporter = nodemailer.createTransport({
 
 // Routes
 app.post('/api/book', (req, res) => {
+    console.log('Received booking request. Body:', req.body);
+    console.log('Headers:', req.headers);
+    
     const { name, email, phone, date, time, eventType, details } = req.body;
     
     // Validate required fields
     if (!name || !email || !phone || !date || !time || !eventType) {
         console.error('Missing required fields:', { name, email, phone, date, time, eventType });
         return res.status(400).json({ 
-            error: 'All fields are required except details' 
+            error: 'All fields are required except details',
+            missing: Object.entries({ name, email, phone, date, time, eventType })
+                .filter(([key, value]) => !value)
+                .map(([key]) => key)
         });
     }
 

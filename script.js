@@ -36,6 +36,8 @@ if (bookingForm) {
         const bookingDetails = Object.fromEntries(formData.entries());
         
         try {
+            console.log('Submitting booking details:', bookingDetails);
+            
             const response = await fetch('/api/book', {
                 method: 'POST',
                 headers: {
@@ -44,17 +46,20 @@ if (bookingForm) {
                 body: JSON.stringify(bookingDetails)
             });
 
+            console.log('Response status:', response.status);
             const result = await response.json();
+            console.log('Response data:', result);
             
             if (response.ok) {
                 alert('Booking successful! Check your email for confirmation.');
                 this.reset();
             } else {
-                alert('Error: ' + result.error);
+                console.error('Server error:', result.error);
+                alert('Error: ' + (result.error || 'Unknown error occurred'));
             }
         } catch (error) {
-            alert('Error submitting booking. Please try again later.');
-            console.error('Error:', error);
+            console.error('Submission error:', error);
+            alert('Error submitting booking. Please try again later. Error: ' + error.message);
         }
     });
 }
