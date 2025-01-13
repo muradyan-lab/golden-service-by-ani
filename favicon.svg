@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#FFD700"/>
+            <stop offset="100%" style="stop-color:#FFA500"/>
+        </linearGradient>
+    </defs>
+    <g fill="url(#gold)">
+        <!-- Crown -->
+        <path d="M16 4L20 8L16 12L12 8L16 4Z"/>
+        <path d="M4 12L8 8L12 12L8 16L4 12Z"/>
+        <path d="M28 12L24 8L20 12L24 16L28 12Z"/>
+        <path d="M4 12L28 12L26 20L6 20L4 12Z"/>
+        
+        <!-- Wine Glass -->
+        <path d="M12 22L20 22L19 24L13 24L12 22Z"/>
+        <path d="M15 24L17 24L17 28L15 28L15 24Z"/>
+        <path d="M13 28L19 28L19 29L13 29L13 28Z"/>
+    </g>
+</svg>
